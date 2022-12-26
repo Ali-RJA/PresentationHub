@@ -1,4 +1,4 @@
-# group6_final_project
+# PresentationHub
 
 When it comes to grading presentations made by students, one of the factors taken into account is peer reviews. This application intends on easing this part of the grading process by allowing for students to interactively review the presentations of their peers, with instructors having easy access to this data for grading.
 
