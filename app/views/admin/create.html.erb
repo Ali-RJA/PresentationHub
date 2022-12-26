@@ -1,0 +1,25 @@
+<h1>Create New Presentation Event</h1>
+<%= form_with model: Presentation.new, method: :post, url: 'create' do |f| %>
+  <div class="mb-3">
+    <%= f.label :topic, class: "form-label" %>
+    <%= f.text_field :topic, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :author, class: 'form-label' %>
+    <%= f.collection_select :user_id, User.where(active: true), :id, :email, { selected: current_user.id }, { class: 'form-select' } %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :date, class: "form-label" %>
+    <%= f.datetime_field :date, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :document, class: "form-label" %>
+    <%= f.file_field :document, accept:"application/pdf", class: "form-control" %>
+  </div>
+  
+  <%= f.submit "Create", class: "btn btn-primary" %>
+  <%= link_to 'Cancel', url_for(:back), class: "btn btn-secondary" %>
+<% end %>

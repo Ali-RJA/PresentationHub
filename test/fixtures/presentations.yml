@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  presentation_id: 
+  name: MyString
+  date: 2022-11-21 19:47:11
+  topic: MyString
+
+two:
+  presentation_id: 
+  name: MyString
+  date: 2022-11-21 19:47:11
+  topic: MyString

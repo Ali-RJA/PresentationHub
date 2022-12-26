@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg sticky-top bg-light shadow mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/"><%= title %></a>
+    <% if controller_name == 'admin' %>
+      <div class="nav-item text-danger">INSTRUCTOR MODE</div>
+    <% end %>
+    <ul class="navbar-nav">
+      <% if user_signed_in? %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <%= current_user.email %>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><%= link_to "Edit Profile", edit_user_registration_path, class: "dropdown-item" %></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <%# Button is needed since DELETE call can't be made through anchor tag %>
+              <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "dropdown-item" %>
+            </li>
+          </ul>
+        </li>
+      <% else %>
+        <li class="nav-item">
+          <%= link_to "Sign In", new_user_session_path, class: "btn nav-btn"  %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</nav>

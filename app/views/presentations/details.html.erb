@@ -1,0 +1,107 @@
+<%
+  @feedbacks = Feedback.where(presentation_id: @presentation.id)
+  @author = User.find_by(id: @presentation.user_id)
+  @current_feedback = Feedback.find_by(user_id: current_user.id, presentation_id: @presentation.id)
+%>
+
+<h1><%= @presentation.topic %> (<%= @presentation.date %>)</h1>
+<h2>By <%= @author.email %></h2>
+
+<%= link_to '← Return to presentations list', '/', class: 'btn btn-outline-secondary my-3' %>
+<% if @presentation.document.attached? %>
+  <%= link_to "Download", rails_blob_path(@presentation.document, disposition: "attachment"), class: 'btn btn-outline-secondary my-3' %>
+<% end %>
+
+<% if @presentation.user_id == current_user.id %>
+  <hr>
+  <ul class="list-group mb-3">
+    <% if @feedbacks.count > 0 %>
+      <% @feedbacks.each do |feedback| %>
+        <% @user = User.find_by(id: feedback.user_id) %>
+
+        <li class="list-group-item d-flex justify-content-between align-items-start <%= feedback.user_id == current_user.id ? 'list-group-item-primary' : '' %>">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">
+              <%= @user.email %> <%= @user.active ? '' : '(unenrolled)' %>
+            </div>
+            <%= feedback.comments %>
+          </div>
+          <span class="badge bg-primary rounded-pill"><%= feedback.rating %></span>
+        </li>
+      <% end %>
+    <% else %>
+      <p>No comments found.</p>
+    <% end %>
+  </ul>
+<% end %>
+
+<% if !Feedback.where(presentation_id: @presentation.id, user_id: current_user.id).exists? %>
+  <hr>
+  <h3 class="mb-3">Add Feedback</h3>
+
+  <%= form_with model: Feedback.new, url: "#{@presentation.id}/feedback", method: :post do |f| %>
+    <div class="mb-3">
+      <%= f.label :rating, class: "form-label" %>
+      <div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 0, class: "form-check-input" %>
+          <%= f.label :rating, "0 – Unacceptable", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 1, class: "form-check-input" %>
+          <%= f.label :rating, "1 – Bad", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 2, class: "form-check-input" %>
+          <%= f.label :rating, "2 – Poor", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 3, class: "form-check-input", checked: true %>
+          <%= f.label :rating, "3 – Okay", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 4, class: "form-check-input" %>
+          <%= f.label :rating, "4 – Good", class: "form-check-label" %>
+        </div>
+        <div class="form-check">
+          <%= f.radio_button :rating, 5, class: "form-check-input" %>
+          <%= f.label :rating, "5 – Excellent", class: "form-check-label" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :comments, class: "form-label" %>
+      <%= f.text_area :comments, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Add Feedback", class: "btn btn-primary" %>
+  <% end %>
+<% elsif @presentation.user_id != current_user.id %>
+  <hr>
+  <h3 class="mb-3">Your Review</h3>
+  <ul class="list-group mb-3">
+    <li class="list-group-item d-flex justify-content-between align-items-start">
+      <div class="ms-2 me-auto">
+        <div class="fw-bold">
+          <%= current_user.email %>
+        </div>
+        <%= @current_feedback.comments %>
+      </div>
+      <span class="badge bg-primary rounded-pill"><%= @current_feedback.rating %></span>
+    </li>
+  </ul>
+  <%= button_to "Delete Feedback",
+                { controller: :presentations, action: :delete_feedback, id: Feedback.find_by(user_id: current_user.id).id },
+                data: { confirm: "Are you sure?" },
+                method: :delete,
+                class: "btn btn-danger" %>
+<% end %>
+
+<% if @presentation.user_id == current_user.id %>
+  <%= button_to "Delete Presentation",
+                { controller: :presentations, action: :delete_presentation },
+                data: { confirm: "Are you sure?" },
+                method: :delete,
+                class: "btn btn-danger" %>
+<% end %>

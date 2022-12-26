@@ -1,0 +1,130 @@
+<%
+  @feedbacks = Feedback.where(presentation_id: @presentation.id)
+  @author = User.find_by(id: @presentation.user_id)
+%>
+
+<div class="modal fade" id="edit-modal" tabindex="-1" aria-hidden="true">
+  <%= form_with model: @presentation, method: :put, url: '' do |f| %>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Presentation</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <%= f.label :topic, class: 'form-label' %>
+          <%= f.text_field :topic, class: 'form-control' %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :author, class: 'form-label' %>
+          <%= f.collection_select :user_id, User.where(active: true), :id, :email, {}, { class: 'form-select' } %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :date, class: "form-label" %>
+          <%= f.datetime_field :date, class: "form-control" %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :document, class: "form-label" %>
+          <%= f.file_field :document, class: "form-control" %>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <%= f.submit 'Update', class: 'btn btn-primary' %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>
+
+<h1><%= @presentation.topic %> (<%= @presentation.date %>)</h1>
+<h2>By <%= @author.email %> <%= @author.active ? '' : '(unenrolled)' %></h2>
+
+<%= link_to '← Return to presentations list', '/', class: 'btn btn-outline-secondary my-3' %>
+<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#edit-modal">
+  Edit
+</button>
+<% if @presentation.document.attached? %>
+  <%= link_to "Download", rails_blob_path(@presentation.document, disposition: "attachment"), class: 'btn btn-outline-secondary my-3' %>
+<% end %>
+
+<hr>
+
+<ul class="list-group mb-3">
+  <% if @feedbacks.count > 0 %>
+    <% @feedbacks.each do |feedback| %>
+      <% @user = User.find_by(id: feedback.user_id) %>
+      <li class="list-group-item d-flex justify-content-between align-items-start <%= feedback.user_id == current_user.id ? 'list-group-item-primary' : '' %>">
+        <div class="ms-2 me-auto">
+          <div class="fw-bold">
+            <%= @user.email %> <%= @user.active ? '' : '(unenrolled)' %>
+          </div>
+          <%= feedback.comments %>
+        </div>
+        <span class="badge bg-primary rounded-pill"><%= feedback.rating %></span>
+      </li>
+    <% end %>
+  <% else %>
+    <p>No comments found.</p>
+  <% end %>
+</ul>
+  
+
+<% if !Feedback.where(presentation_id: @presentation.id, user_id: current_user.id).exists? && @presentation.user_id != current_user.id %>
+  <hr>
+  <h3 class="mb-3">Add Feedback</h3>
+
+  <%= form_with model: Feedback.new, url: "#{@presentation.id}/feedback", method: :post do |f| %>
+    <div class="mb-3">
+      <%= f.label :rating, class: "form-label" %>
+      <div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 0, class: "form-check-input" %>
+          <%= f.label :rating, "0 – Unacceptable", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 1, class: "form-check-input" %>
+          <%= f.label :rating, "1 – Bad", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 2, class: "form-check-input" %>
+          <%= f.label :rating, "2 – Poor", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 3, class: "form-check-input", checked: true %>
+          <%= f.label :rating, "3 – Okay", class: "form-check-label" %>
+        </div>
+        <div class="form-check mb-1">
+          <%= f.radio_button :rating, 4, class: "form-check-input" %>
+          <%= f.label :rating, "4 – Good", class: "form-check-label" %>
+        </div>
+        <div class="form-check">
+          <%= f.radio_button :rating, 5, class: "form-check-input" %>
+          <%= f.label :rating, "5 – Excellent", class: "form-check-label" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :comments, class: "form-label" %>
+      <%= f.text_area :comments, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Add Feedback", class: "btn btn-primary" %>
+  <% end %>
+<% else %>
+  <%= button_to "Delete Feedback",
+                { controller: :admin, action: :delete_feedback, id: Feedback.find_by(user_id: current_user.id).id },
+                data: { confirm: "Are you sure?" },
+                method: :delete,
+                class: "btn btn-danger" %>
+<% end %>
+
+<% if @presentation.user_id == current_user.id %>
+  <%= button_to "Delete Presentation",
+                { controller: :admin, action: :delete_presentation },
+                data: { confirm: "Are you sure?" },
+                method: :delete,
+                class: "btn btn-danger" %>
+<% end %>
